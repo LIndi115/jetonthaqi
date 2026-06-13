@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistemi i Ofertave - JETON THAQI</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root {
             --primary-color: #1a252f;
@@ -99,6 +98,7 @@
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 30px;
+            table-layout: fixed; /* Forcon kolonat të qëndrojnë në vend */
         }
 
         th {
@@ -112,6 +112,11 @@
         td {
             padding: 10px;
             border-bottom: 1px solid #dcdde1;
+        }
+
+        td input {
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .td-veprime {
@@ -192,27 +197,55 @@
             border-radius: 6px;
         }
 
-        /* Stilet speciale që aplikohen VETËM gjatë krijimit të PDF-së */
-        .hide-for-pdf .actions-bar,
-        .hide-for-pdf .btn-danger,
-        .hide-for-pdf .btn-add-row,
-        .hide-for-pdf .td-veprime,
-        .hide-for-pdf th:last-child {
-            display: none !important;
-        }
-        
-        .hide-for-pdf input, .hide-for-pdf textarea {
-            border: none !important;
-            padding: 0 !important;
-            background: transparent !important;
-            color: #000 !important;
-            font-family: inherit !important;
+        /* Truku i ri që heq shkrimet e browserit automatikisht në PC dhe Telefon */
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 0mm; /* Kjo e detyron telefonin t'i fshijë shkrimet lart dhe poshtë */
+            }
+            body {
+                background-color: #fff !important;
+                color: #000 !important;
+                padding: 20mm !important; /* Kjo krijon hapësirën e pastër të dokumentit */
+                margin: 0 !important;
+            }
+            .container {
+                box-shadow: none !important;
+                padding: 0 !important;
+                max-width: 100% !important;
+                width: 100% !important;
+            }
+            .actions-bar, .btn-danger, .btn-add-row, .td-veprime, th:last-child, td:last-child {
+                display: none !important;
+            }
+            table {
+                width: 100% !important;
+            }
+            th:nth-child(1) { width: 45% !important; }
+            th:nth-child(2) { width: 15% !important; }
+            th:nth-child(3) { width: 12% !important; }
+            th:nth-child(4) { width: 13% !important; }
+            th:nth-child(5) { width: 15% !important; }
+            
+            input, textarea {
+                border: none !important;
+                padding: 0 !important;
+                background: transparent !important;
+                resize: none !important;
+                width: 100% !important;
+                color: #000 !important;
+                font-size: 14px !important;
+                -webkit-appearance: none;
+            }
+            .input-group label {
+                margin-bottom: 2px !important;
+            }
         }
     </style>
 </head>
 <body>
 
-<div class="container" id="oferta-blloku">
+<div class="container">
     <div class="header">
         <div class="company-info">
             <h1>JETON THAQI</h1>
@@ -222,7 +255,7 @@
         <div class="doc-title">
             <h2>OFERTË</h2>
             <div class="input-group" style="margin-top: 10px;">
-                <input type="text" id="nr-ofertes" placeholder="Nr. i Ofertës (p.sh. 01/2026)" style="text-align: right; font-weight: bold;">
+                <input type="text" placeholder="Nr. i Ofertës (p.sh. 01/2026)" style="text-align: right; font-weight: bold;">
             </div>
         </div>
     </div>
@@ -232,7 +265,7 @@
             <h4 style="margin-top: 0; color: var(--primary-color);">Për: (Klienti)</h4>
             <div class="input-group">
                 <label>Emri i Klientit / Kompanisë</label>
-                <input type="text" id="emri-klientit" placeholder="Filan Fisteku">
+                <input type="text" placeholder="Filan Fisteku">
             </div>
             <div class="input-group">
                 <label>Lokacioni / Adresa</label>
@@ -256,10 +289,10 @@
         <thead>
             <tr>
                 <th style="width: 45%;">Përshkrimi i Punës / Materialit</th>
-                <th style="width: 12%;">Njësia</th>
+                <th style="width: 15%;">Njësia</th>
                 <th style="width: 12%;">Sasia</th>
-                <th style="width: 15%;">Çmimi (€)</th>
-                <th style="width: 16%;">Totali (€)</th>
+                <th style="width: 13%;">Çmimi (€)</th>
+                <th style="width: 15%;">Totali (€)</th>
                 <th class="td-veprime" style="width: 10%;">Fshij</th>
             </tr>
         </thead>
@@ -296,8 +329,8 @@
     </div>
 
     <div class="actions-bar">
-        <span style="color: #7f8c8d; font-size: 13px; align-self: center;">Plotësoni të dhënat dhe shtypni butonin djathtas për ta ruajtur të pastër.</span>
-        <button class="btn btn-success" onclick="shkarkoPDF()">🖨️ Ruaj si PDF / Printo</button>
+        <span style="color: #7f8c8d; font-size: 13px; align-self: center;">Plotësoni të dhënat dhe klikoni butonin djathtas për ta ruajtur të pastër.</span>
+        <button class="btn btn-success" onclick="window.print()">🖨️ Printo / Ruaj si PDF</button>
     </div>
 </div>
 
@@ -346,32 +379,6 @@
         
         document.getElementById('subtotal').innerText = subtotal.toFixed(2) + ' €';
         document.getElementById('grand-total').innerText = subtotal.toFixed(2) + ' €';
-    }
-
-    // Funksioni që eliminon shkrimet automatike të browserit
-    function shkarkoPDF() {
-        const elementi = document.getElementById('oferta-blloku');
-        const emriKlientit = document.getElementById('emri-klientit').value.trim() || 'Klient';
-        const nrOfertes = document.getElementById('nr-ofertes').value.trim() || 'oferta';
-        
-        const emriFajllit = `Oferta_${nrOfertes}_${emriKlientit}.pdf`.replace(/[/\\?%*:|"<>\s]/g, '_');
-
-        // Shtohet klasa që i pastron kornizat dhe butonat
-        elementi.classList.add('hide-for-pdf');
-
-        const opsionet = {
-            margin:       15,
-            filename:     emriFajllit,
-            image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2, useCORS: true, logging: false },
-            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
-
-        // Shkarkohet direkt si fajll i pastër në telefon ose PC
-        html2pdf().set(opsionet).from(elementi).save().then(() => {
-            // Kthehen butonat dhe kornizat prapë në ekran për editim
-            elementi.classList.remove('hide-for-pdf');
-        });
     }
 </script>
 
